@@ -45,6 +45,7 @@ import androidx.compose.ui.unit.sp
 import androidx.core.app.ShareCompat
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
+import com.example.registration.navigation.NewsArticlePage
 import com.example.registration.viewmodels.AuthViewModel
 import com.example.registration.viewmodels.NewsViewModel
 import com.example.registration.network.Article
@@ -61,13 +62,9 @@ fun HomePage(
     val authState = authViewModel.authState.observeAsState()
     val articles by newsViewModel.articles.observeAsState(emptyList())
 
-
-
-
-
 //    LaunchedEffect(authState.value) {
 //        when (authState.value) {
-//            is AuthState.UnAuthenticated -> navController.navigate(Signup)
+//            is AuthState.UnAuthenticated -> navController.navigate(SignupPage)
 //            else -> Unit
 //        }
 //    }
@@ -81,7 +78,7 @@ fun HomePage(
 
             LazyColumn() {
                 items(articles) { article ->
-                    NewsCard(article)
+                    NewsCard(article, navController)
                 }
             }
 
@@ -95,7 +92,10 @@ fun HomePage(
 
 
 @Composable
-fun NewsCard(article: Article) {
+fun NewsCard(
+    article: Article,
+    navController: NavController
+) {
     val context = LocalContext.current
     Card(
         modifier = Modifier
@@ -103,7 +103,8 @@ fun NewsCard(article: Article) {
             .padding(horizontal = 12.dp, vertical = 8.dp)
             .height(220.dp),
         shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.Transparent)
+        colors = CardDefaults.cardColors(containerColor = Color.Transparent),
+        onClick = { navController.navigate(NewsArticlePage(article.url)) }
     ) {
         Box(
             modifier = Modifier

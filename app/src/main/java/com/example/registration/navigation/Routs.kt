@@ -3,8 +3,12 @@ package com.example.registration.navigation
 import kotlinx.serialization.Serializable
 
 @Serializable
-object Home
+object HomePage
 @Serializable
-object Login
+object LoginPage
 @Serializable
-object Signup
+object SignupPage
+@Serializable
+data class NewsArticlePage(val url: String)
+
+

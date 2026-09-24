@@ -29,8 +29,8 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.example.registration.viewmodels.AuthState
 import com.example.registration.viewmodels.AuthViewModel
-import com.example.registration.navigation.Home
-import com.example.registration.navigation.Signup
+import com.example.registration.navigation.HomePage
+import com.example.registration.navigation.SignupPage
 
 //@Preview(device = "spec:width=411dp,height=891dp", showSystemUi = true, showBackground = true)
 @Composable
@@ -49,7 +49,7 @@ fun LoginPage(
 
     LaunchedEffect(authState.value) {
         when (authState.value) {
-            is AuthState.Authenticated -> navController.navigate(route = Home)
+            is AuthState.Authenticated -> navController.navigate(route = HomePage)
             is AuthState.Error -> Toast.makeText(
                 context,
                 (authState.value as AuthState.Error).message, Toast.LENGTH_SHORT
@@ -64,7 +64,7 @@ fun LoginPage(
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Text(text = "Login Page", fontSize = 32.sp)
+        Text(text = "LoginPage Page", fontSize = 32.sp)
 
         Spacer(modifier = Modifier.height(16.dp))
 
@@ -106,7 +106,7 @@ fun LoginPage(
             },
             enabled = authState.value !is AuthState.Loading
             ) {
-            Text(text = "Login")
+            Text(text = "LoginPage")
         }
 
 
@@ -114,10 +114,10 @@ fun LoginPage(
 
         TextButton(
             onClick = {
-                navController.navigate(Signup)
+                navController.navigate(SignupPage)
             }
         ) {
-            Text(text = "Don't have an account, Signup")
+            Text(text = "Don't have an account, SignupPage")
         }
 
     }

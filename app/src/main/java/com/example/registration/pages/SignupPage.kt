@@ -30,8 +30,8 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.example.registration.viewmodels.AuthState
 import com.example.registration.viewmodels.AuthViewModel
-import com.example.registration.navigation.Home
-import com.example.registration.navigation.Login
+import com.example.registration.navigation.HomePage
+import com.example.registration.navigation.LoginPage
 
 //@Preview(device = "spec:width=411dp,height=891dp", showSystemUi = true, showBackground = true)
 @Composable
@@ -49,7 +49,7 @@ fun SignupPage(
 
     LaunchedEffect(authState.value) {
         when (authState.value) {
-            is AuthState.Authenticated -> navController.navigate(route = Home)
+            is AuthState.Authenticated -> navController.navigate(route = HomePage)
             is AuthState.Error -> Toast.makeText(
                 context,
                 (authState.value as AuthState.Error).message, Toast.LENGTH_SHORT
@@ -63,7 +63,7 @@ fun SignupPage(
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Text(text = "Signup Page", fontSize = 32.sp)
+        Text(text = "SignupPage Page", fontSize = 32.sp)
 
         Spacer(modifier = Modifier.height(16.dp))
 
@@ -111,9 +111,9 @@ fun SignupPage(
         Spacer(modifier = Modifier.height(8.dp))
 
         TextButton(onClick = {
-            navController.navigate(Login)
+            navController.navigate(LoginPage)
         }) {
-            Text(text = "Already have an account, Login")
+            Text(text = "Already have an account, LoginPage")
         }
 
     }
