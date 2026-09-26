@@ -2,6 +2,7 @@ package com.example.registration.pages
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -10,6 +11,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
@@ -17,6 +19,10 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Bookmark
+import androidx.compose.material.icons.filled.Explore
+import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.PersonPin
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Share
 import androidx.compose.material3.Button
@@ -24,11 +30,15 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.NavigationBar
+import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
@@ -37,6 +47,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
@@ -49,6 +60,7 @@ import com.example.registration.navigation.NewsArticlePage
 import com.example.registration.viewmodels.AuthViewModel
 import com.example.registration.viewmodels.NewsViewModel
 import com.example.registration.network.Article
+import com.example.registration.viewmodels.NavItem
 
 //@Preview(device = "spec:width=411dp,height=891dp", showBackground = true, showSystemUi = true)
 @OptIn(ExperimentalMaterialApi::class)
@@ -68,25 +80,22 @@ fun HomePage(
 //            else -> Unit
 //        }
 //    }
-
     Column(
         modifier = modifier
             .fillMaxSize()
-            .padding(top = 16.dp, bottom = 16.dp)
+            .padding(start = 16.dp, end = 16.dp)
     ) {
         CategoriesBar(newsViewModel)
-
-            LazyColumn() {
-                items(articles) { article ->
-                    NewsCard(article, navController)
-                }
+        LazyColumn(
+            modifier = Modifier.padding(start = 16.dp, end = 16.dp)
+        ) {
+            items(
+                articles,
+                key = { it.url ?: it.title ?: it.hashCode() }
+            ) { article ->
+                NewsCard(article, navController)
             }
-
-//        TextButton(onClick = {
-//            authViewModel.signout()
-//        }) {
-//            Text(text = "Sign out")
-//        }
+        }
     }
 }
 
@@ -100,13 +109,16 @@ fun NewsCard(
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 12.dp, vertical = 8.dp)
-            .height(220.dp),
-        shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.Transparent),
-        onClick = { navController.navigate(NewsArticlePage(article.url)) }
+            .height(300.dp),
+        shape = RoundedCornerShape(8.dp),
+        colors = CardDefaults.cardColors(containerColor = Color(0xFFF8F9FC)),
+        onClick = {
+            article.url
+                ?.takeIf { it.startsWith("https://") }
+                ?.let { navController.navigate(NewsArticlePage(it)) }
+        }
     ) {
-        Box(
+        Column(
             modifier = Modifier
                 .fillMaxSize()
         ) {
@@ -115,56 +127,65 @@ fun NewsCard(
                 model = article.urlToImage
                     ?: "https://png.pngtree.com/png-vector/20190820/ourmid/pngtree-no-image-vector-illustration-isolated-png-image_1694547.jpg",
                 contentDescription = null,
+                contentScale = ContentScale.Crop,
                 modifier = Modifier
-                    .fillMaxSize()
-            )
-            IconButton(
-                onClick = {
-                    ShareCompat
-                        .IntentBuilder(context)
-                        .setType("text/plain")
-                        .setChooserTitle("Share article with: ")
-                        .setText(article.url)
-                        .startChooser()
-                },
-                modifier = Modifier
-                    .align(Alignment.TopEnd)
-                    .padding(12.dp)
-                    .background(
-                        Color.White.copy(alpha = 0.9f),
-                        shape = CircleShape
-                    )
-            ) {
-                Icon(
-                    imageVector = Icons.Default.Share,
-                    contentDescription = "Share",
-                    tint = Color(0xFF6A4C93)
-                )
-            }
-
-            Box(
-                modifier = Modifier
+                    .height(176.dp)
                     .fillMaxWidth()
-                    .align(Alignment.BottomStart)
-                    .height(100.dp)
-                    .background(
-                        Brush.verticalGradient(
-                            colors = listOf(Color.Transparent, Color.Black.copy(alpha = 0.75f))
-                        )
-                    )
+                    .clip(shape = RoundedCornerShape(8.dp))
             )
-
             Text(
-                text = article.title,
-                color = Color.White,
+                modifier = Modifier.padding(top = 20.dp),
+                text = article.title ?: "No title available",
                 fontSize = 18.sp,
                 fontWeight = FontWeight.Bold,
                 maxLines = 2,
                 overflow = TextOverflow.Ellipsis,
-                modifier = Modifier
-                    .align(Alignment.BottomStart)
-                    .padding(16.dp)
             )
+            Row(
+                modifier = Modifier.padding(top = 8.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = article.author?: "No title available",
+                    color = Color.Gray
+                )
+                Text(
+                    text = "",
+                    color = Color.Gray,
+                    modifier = Modifier.weight(1f)
+                )
+
+                Icon(
+                    imageVector = Icons.Default.Share,
+                    contentDescription = "Share",
+                    modifier = Modifier
+                        .background(color =  Color(0xFFF8F9FC),)
+                        .clickable(
+                            onClick = {
+                                ShareCompat
+                                    .IntentBuilder(context)
+                                    .setType("text/plain")
+                                    .setChooserTitle("Share article with: ")
+                                    .setText("article.url")
+                                    .startChooser()
+                            }
+                        )
+                )
+            }
+
+//            Box(
+//                modifier = Modifier
+//                    .fillMaxWidth()
+//                    .align(Alignment.BottomStart)
+//                    .height(100.dp)
+//                    .background(
+//                        Brush.verticalGradient(
+//                            colors = listOf(Color.Transparent, Color.Black.copy(alpha = 0.75f))
+//                        )
+//                    )
+//            )
+
+
         }
     }
 }

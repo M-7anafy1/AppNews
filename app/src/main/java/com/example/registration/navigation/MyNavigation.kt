@@ -10,6 +10,7 @@ import com.example.registration.viewmodels.AuthViewModel
 import com.example.registration.viewmodels.NewsViewModel
 import com.example.registration.pages.HomePage
 import com.example.registration.pages.LoginPage
+import com.example.registration.pages.MainPage
 import com.example.registration.pages.NewsArticlePage
 import com.example.registration.pages.SignupPage
 
@@ -27,7 +28,11 @@ fun MyNavigation(
         startDestination = HomePage
     ) {
         composable<HomePage> {
-            HomePage(modifier, navController, authViewModel, newsViewModel)
+            MainPage(
+                navController = navController,
+                authViewModel = authViewModel,
+                newsViewModel = newsViewModel
+            )
         }
 
         composable<LoginPage> {

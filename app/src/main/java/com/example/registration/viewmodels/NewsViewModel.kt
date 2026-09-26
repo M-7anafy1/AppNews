@@ -18,19 +18,22 @@ class NewsViewModel : ViewModel() {
     val articles: LiveData<List<Article>> = _articles
     val c: NewsCallable = RetrofitInstance.api
 
+    private val _error = MutableLiveData<String?>()
+    val error: LiveData<String?> = _error
+
     init {
         loadNews()
     }
 
     fun loadNews(category: String = "general") {
-        c.getNews(category = category).enqueue(object : Callback<News> {
+        c.getNews().enqueue(object : Callback<News> {
             override fun onResponse(call: Call<News?>, response: Response<News?>) {
                 val news = response.body()
-                _articles.value = news?.articles
+                _articles.value = news?.articles.orEmpty()
             }
 
             override fun onFailure(call: Call<News?>, t: Throwable) {
-                Log.d("trace", "err: ${t.message}")
+                _error.postValue("Couldn't load search results. Check your connection and try again.")
             }
         })
     }
@@ -47,7 +50,7 @@ class NewsViewModel : ViewModel() {
             override fun onFailure(
                 call: Call<News?>, t: Throwable
             ) {
-                TODO("Not yet implemented")
+                _error.postValue("Couldn't load search results. Check your connection and try again.")
             }
         })
     }
