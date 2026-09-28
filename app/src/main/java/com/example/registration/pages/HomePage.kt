@@ -4,8 +4,10 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -20,6 +22,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Bookmark
+import androidx.compose.material.icons.filled.BookmarkBorder
 import androidx.compose.material.icons.filled.Explore
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.PersonPin
@@ -54,6 +57,8 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.app.ShareCompat
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import com.example.registration.navigation.NewsArticlePage
@@ -61,6 +66,7 @@ import com.example.registration.viewmodels.AuthViewModel
 import com.example.registration.viewmodels.NewsViewModel
 import com.example.registration.network.Article
 import com.example.registration.viewmodels.NavItem
+import com.example.registration.viewmodels.NewsDBViewModel
 
 //@Preview(device = "spec:width=411dp,height=891dp", showBackground = true, showSystemUi = true)
 @OptIn(ExperimentalMaterialApi::class)
@@ -69,10 +75,12 @@ fun HomePage(
     modifier: Modifier = Modifier,
     navController: NavController,
     authViewModel: AuthViewModel,
-    newsViewModel: NewsViewModel
+    newsViewModel: NewsViewModel,
+    newsDBViewModel: NewsDBViewModel = viewModel()
 ) {
     val authState = authViewModel.authState.observeAsState()
     val articles by newsViewModel.articles.observeAsState(emptyList())
+    val favoriteUrls by newsDBViewModel.favoriteUrls.collectAsStateWithLifecycle()
 
 //    LaunchedEffect(authState.value) {
 //        when (authState.value) {
@@ -83,17 +91,25 @@ fun HomePage(
     Column(
         modifier = modifier
             .fillMaxSize()
-            .padding(start = 16.dp, end = 16.dp)
+            .padding(start = 20.dp, end = 20.dp)
     ) {
         CategoriesBar(newsViewModel)
         LazyColumn(
-            modifier = Modifier.padding(start = 16.dp, end = 16.dp)
+            modifier = Modifier,
+//                .padding(start = 16.dp, end = 16.dp)
+            contentPadding = PaddingValues(1.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             items(
                 articles,
                 key = { it.url ?: it.title ?: it.hashCode() }
             ) { article ->
-                NewsCard(article, navController)
+                NewsCard(
+                    article = article,
+                    navController = navController,
+                    isFavorite = article.url in favoriteUrls,
+                    onToggleFavorite = { newsDBViewModel.toggle(article) }
+                )
             }
         }
     }
@@ -103,7 +119,9 @@ fun HomePage(
 @Composable
 fun NewsCard(
     article: Article,
-    navController: NavController
+    navController: NavController,
+    isFavorite: Boolean,
+    onToggleFavorite: () -> Unit
 ) {
     val context = LocalContext.current
     Card(
@@ -123,13 +141,25 @@ fun NewsCard(
                 .fillMaxSize()
         ) {
 
+            Icon(
+                imageVector = if (isFavorite) Icons.Default.Bookmark else Icons.Default.BookmarkBorder,
+                contentDescription = "Bookmark",
+                tint = Color(0xFF6A4C93),
+                modifier = Modifier
+                    .padding(12.dp)
+                    .clip(CircleShape)
+                    .background(Color.White.copy(alpha = 0.9f))
+                    .clickable(onClick = onToggleFavorite)
+                    .padding(8.dp)
+            )
+
             AsyncImage(
                 model = article.urlToImage
                     ?: "https://png.pngtree.com/png-vector/20190820/ourmid/pngtree-no-image-vector-illustration-isolated-png-image_1694547.jpg",
                 contentDescription = null,
                 contentScale = ContentScale.Crop,
                 modifier = Modifier
-                    .height(176.dp)
+                    .height(180.dp)
                     .fillMaxWidth()
                     .clip(shape = RoundedCornerShape(8.dp))
             )
@@ -146,11 +176,11 @@ fun NewsCard(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    text = article.author?: "No title available",
+                    text = article.source?.name ?: "Unknown",
                     color = Color.Gray
                 )
                 Text(
-                    text = "",
+                    text = article.publishedAt?: "",
                     color = Color.Gray,
                     modifier = Modifier.weight(1f)
                 )
@@ -159,7 +189,7 @@ fun NewsCard(
                     imageVector = Icons.Default.Share,
                     contentDescription = "Share",
                     modifier = Modifier
-                        .background(color =  Color(0xFFF8F9FC),)
+                        .background(color = Color(0xFFF8F9FC))
                         .clickable(
                             onClick = {
                                 ShareCompat

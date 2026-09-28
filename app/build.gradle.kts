@@ -5,7 +5,7 @@ plugins {
     alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.kotlin.serialization)
     alias(libs.plugins.google.gms.google.services)
-
+    id("com.google.devtools.ksp")
 }
 
 
@@ -71,5 +71,6 @@ dependencies {
     implementation("androidx.compose.material:material-icons-extended")
     implementation("io.coil-kt:coil-compose:2.7.0")
     implementation("androidx.compose.material:material")
-
+    implementation("androidx.room3:room3-runtime:3.0.3")
+   ksp("androidx.room3:room3-compiler:3.0.3")
 }

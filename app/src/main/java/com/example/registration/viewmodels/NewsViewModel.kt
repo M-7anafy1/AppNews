@@ -26,7 +26,7 @@ class NewsViewModel : ViewModel() {
     }
 
     fun loadNews(category: String = "general") {
-        c.getNews().enqueue(object : Callback<News> {
+        c.getNews(category = category ).enqueue(object : Callback<News> {
             override fun onResponse(call: Call<News?>, response: Response<News?>) {
                 val news = response.body()
                 _articles.value = news?.articles.orEmpty()
